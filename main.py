@@ -27,10 +27,9 @@ from kivy.core.window import Window
 from pidev.kivy import DPEAButton
 from pidev.kivy import PauseScreen
 from time import sleep
-import RPi.GPIO as GPIO 
+import RPi.GPIO as GPIO
 from pidev.stepper import stepper
 from pidev.Cyprus_Commands import Cyprus_Commands_RPi as cyprus
-
 
 # ////////////////////////////////////////////////////////////////
 # //                      GLOBAL VARIABLES                      //
@@ -63,8 +62,9 @@ class MyApp(App):
         self.title = "Robotic Arm"
         return sm
 
+
 Builder.load_file('main.kv')
-Window.clearcolor = (.1, .1,.1, 1) # (WHITE)
+Window.clearcolor = (.1, .1, .1, 1)  # (WHITE)
 
 cyprus.open_spi()
 
@@ -73,13 +73,14 @@ cyprus.open_spi()
 # ////////////////////////////////////////////////////////////////
 
 sm = ScreenManager()
-arm = stepper(port = 0, speed = 10)
+arm = stepper(port=0, speed=10)
+
 
 # ////////////////////////////////////////////////////////////////
 # //                       MAIN FUNCTIONS                       //
 # //             SHOULD INTERACT DIRECTLY WITH HARDWARE         //
 # ////////////////////////////////////////////////////////////////
-	
+
 class MainScreen(Screen):
     version = cyprus.read_firmware_version()
     armPosition = 0
@@ -99,25 +100,60 @@ class MainScreen(Screen):
 
     def toggleArm(self):
         print("Process arm movement here")
+        self.setArmPosition()
+
+    def
 
     def toggleMagnet(self):
         print("Process magnet here")
-        
+        #talon motor
+
+    def setMagent(self):
+        global OFF
+        if OFF:
+            cyprus.set_servo_position(1, .5)
+
+        else:
+            cyprus.set_servo_position(1, 1)
+
     def auto(self):
         print("Run the arm automatically here")
 
-    def setArmPosition(self, position):
+    def setArmPosition(self):
         print("Move arm here")
+        global DOWN
+        if DOWN:
+            cyprus.set_pwm_values(1, period_value=100000, compare_value=100000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+            print("robotic arm up")
+            DOWN = False
+        else:
+            cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+            print("robotic arm down")
+            DOWN = True
+
+
 
     def homeArm(self):
         arm.home(self.homeDirection)
-        
+
     def isBallOnTallTower(self):
         print("Determine if ball is on the top tower")
+        global OFF
+        if ((cyprus.read_gpio() & 0b0001) == 0):
+            print("GPIO on port P6 is LOW")
+            OFF = False
+        else:
+            OFF = True
 
     def isBallOnShortTower(self):
         print("Determine if ball is on the bottom tower")
-        
+        global OFF
+        if ((cyprus.read_gpio() & 0b0010) == 0):
+            print("GPIO on port P7 is LOW")
+            OFF = False
+        else:
+            OFF = True
+
     def initialize(self):
         print("Home arm and turn off magnet")
 
@@ -128,9 +164,9 @@ class MainScreen(Screen):
 
     def quit(self):
         MyApp().stop()
-    
-sm.add_widget(MainScreen(name = 'main'))
 
+
+sm.add_widget(MainScreen(name='main'))
 
 # ////////////////////////////////////////////////////////////////
 # //                          RUN APP                           //
