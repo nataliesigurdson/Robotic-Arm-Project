@@ -30,7 +30,7 @@ from time import sleep
 import RPi.GPIO as GPIO
 from pidev.stepper import stepper
 from pidev.Cyprus_Commands import Cyprus_Commands_RPi as cyprus
-
+from kivy.properties import ObjectProperty
 # ////////////////////////////////////////////////////////////////
 # //                      GLOBAL VARIABLES                      //
 # //                         CONSTANTS                          //
@@ -43,6 +43,9 @@ ON = True
 OFF = False
 tall_OFF = False
 short_OFF = False
+HOME = True
+
+global HOME
 
 YELLOW = .180, 0.188, 0.980, 1
 BLUE = 0.917, 0.796, 0.380, 1
@@ -53,6 +56,8 @@ DEBOUNCE = 0.10
 
 lowerTowerPosition = 60
 upperTowerPosition = 76
+
+position = 0
 
 
 # ////////////////////////////////////////////////////////////////
@@ -88,9 +93,9 @@ cyprus.setup_servo(2)
 
 class MainScreen(Screen):
     version = cyprus.read_firmware_version()
-    armPosition = 0
+    #Slider.value = 0
     lastClick = time.clock()
-
+    #Slider.value = ObjectProperty(None)
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
         self.initialize()
@@ -125,13 +130,31 @@ class MainScreen(Screen):
 
     def setArmPositionH(self):
         print("Move arm horizontally here")
-        self.isBallOnTallTower()
-        if tall_OFF == False:
+        global HOME
+        global position
+        position = self.ids.moveArm.value
+        while True:
 
-            arm.start_relative_move(14)
-        else:
-            if short_OFF == False:
-                arm.start_relative_move(5)
+            if HOME:
+                arm.set_as_home()
+                print("arm moving")
+                arm.start_relative_move(position)
+                #print(self.Slider.value)
+                print("moved")
+                break
+            else:
+                arm.goHome()
+                print(" now at home")
+                HOME = True
+                break
+
+       #self.isBallOnTallTower()
+        #if tall_OFF == False:
+
+            #arm.start_relative_move(14)
+        #else:
+           # if short_OFF == False:
+          #      arm.start_relative_move(5)
 
 
 
