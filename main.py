@@ -44,8 +44,8 @@ OFF = False
 tall_OFF = False
 short_OFF = False
 HOME = True
+homeDirection = 0
 
-global HOME
 
 YELLOW = .180, 0.188, 0.980, 1
 BLUE = 0.917, 0.796, 0.380, 1
@@ -132,21 +132,26 @@ class MainScreen(Screen):
         print("Move arm horizontally here")
         global HOME
         global position
-        position = self.ids.moveArm.value
+        position = self.ids.moveArm.value * -1
+
+
         while True:
 
             if HOME:
-                arm.set_as_home()
+                #arm.set_as_home()
                 print("arm moving")
-                arm.start_relative_move(position)
+                arm.go_to_position(position)
                 #print(self.Slider.value)
                 print("moved")
+                #arm.softStop()
+
                 break
             else:
                 arm.goHome()
                 print(" now at home")
                 HOME = True
                 break
+        x = self.ids.moveArm.value
 
        #self.isBallOnTallTower()
         #if tall_OFF == False:
@@ -166,12 +171,12 @@ class MainScreen(Screen):
     def setMagnet(self):
         global OFF
         if OFF:
-            cyprus.set_servo_position(2, .5)
+            cyprus.set_servo_position(2, 1)
             print("magnet has grabbed")
             OFF = False
 
         else:
-            cyprus.set_servo_position(2, 1)
+            cyprus.set_servo_position(2, 0.5)
             print("magnet has released")
             OFF = True
 
@@ -179,7 +184,8 @@ class MainScreen(Screen):
         print("Run the arm automatically here")
 
     def homeArm(self):
-        arm.home(self.homeDirection)
+        global homeDirection
+        arm.home(1)
 
     def isBallOnTallTower(self):
         print("Determine if ball is on the top tower")
@@ -201,6 +207,8 @@ class MainScreen(Screen):
 
     def initialize(self):
         print("Home arm and turn off magnet")
+        self.homeArm()
+        cyprus.set_servo_position(2, 0.5)
 
     def resetColors(self):
         self.ids.armControl.color = YELLOW
