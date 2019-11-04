@@ -36,11 +36,14 @@ from pidev.Cyprus_Commands import Cyprus_Commands_RPi as cyprus
 # //                         CONSTANTS                          //
 # ////////////////////////////////////////////////////////////////
 START = True
-STOP = False
+STOP= False
 UP = False
 DOWN = True
 ON = True
 OFF = False
+tall_OFF = False
+short_OFF = False
+
 YELLOW = .180, 0.188, 0.980, 1
 BLUE = 0.917, 0.796, 0.380, 1
 CLOCKWISE = 0
@@ -74,6 +77,8 @@ cyprus.open_spi()
 
 sm = ScreenManager()
 arm = stepper(port=0, speed=10)
+cyprus.initialize()
+cyprus.setup_servo(2)
 
 
 # ////////////////////////////////////////////////////////////////
@@ -98,29 +103,12 @@ class MainScreen(Screen):
         self.lastClick = currentTime
         return processInput
 
-    def toggleArm(self):
-        print("Process arm movement here")
-        self.setArmPosition()
+    def toggleArmV(self):
+        print("Process vertical arm movement here")
+        self.setArmPositionV()
 
-    def
-
-    def toggleMagnet(self):
-        print("Process magnet here")
-        #talon motor
-
-    def setMagent(self):
-        global OFF
-        if OFF:
-            cyprus.set_servo_position(1, .5)
-
-        else:
-            cyprus.set_servo_position(1, 1)
-
-    def auto(self):
-        print("Run the arm automatically here")
-
-    def setArmPosition(self):
-        print("Move arm here")
+    def setArmPositionV(self):
+        print("Move arm vertically here")
         global DOWN
         if DOWN:
             cyprus.set_pwm_values(1, period_value=100000, compare_value=100000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
@@ -131,28 +119,62 @@ class MainScreen(Screen):
             print("robotic arm down")
             DOWN = True
 
+    def toggleArmH(self):
+        print("Process horizontal arm movement here")
+        self.setArmPositionH()
 
+    def setArmPositionH(self):
+        print("Move arm horizontally here")
+        self.isBallOnTallTower()
+        if tall_OFF == False:
+
+            arm.start_relative_move(14)
+        else:
+            if short_OFF == False:
+                arm.start_relative_move(5)
+
+
+
+    def toggleMagnet(self):
+        print("Process magnet here")
+        #talon motor
+        self.setMagnet()
+
+    def setMagnet(self):
+        global OFF
+        if OFF:
+            cyprus.set_servo_position(2, .5)
+            print("magnet has grabbed")
+            OFF = False
+
+        else:
+            cyprus.set_servo_position(2, 1)
+            print("magnet has released")
+            OFF = True
+
+    def auto(self):
+        print("Run the arm automatically here")
 
     def homeArm(self):
         arm.home(self.homeDirection)
 
     def isBallOnTallTower(self):
         print("Determine if ball is on the top tower")
-        global OFF
+        global tall_OFF
         if ((cyprus.read_gpio() & 0b0001) == 0):
             print("GPIO on port P6 is LOW")
-            OFF = False
+            tall_OFF = False
         else:
-            OFF = True
+            tall_OFF = True
 
     def isBallOnShortTower(self):
         print("Determine if ball is on the bottom tower")
-        global OFF
+        global short_OFF
         if ((cyprus.read_gpio() & 0b0010) == 0):
             print("GPIO on port P7 is LOW")
-            OFF = False
+            short_OFF = False
         else:
-            OFF = True
+            short_OFF = True
 
     def initialize(self):
         print("Home arm and turn off magnet")
