@@ -118,10 +118,12 @@ class MainScreen(Screen):
         if DOWN:
             cyprus.set_pwm_values(1, period_value=100000, compare_value=100000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
             print("robotic arm up")
+            self.ids.armControl.text = "Raise Arm"
             DOWN = False
         else:
             cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
             print("robotic arm down")
+            self.ids.armControl.text = "Lower Arm"
             DOWN = True
 
     def toggleArmH(self):
@@ -173,15 +175,77 @@ class MainScreen(Screen):
         if OFF:
             cyprus.set_servo_position(2, 1)
             print("magnet has grabbed")
+            self.ids.magnetControl.text = "Magnet Off"
             OFF = False
 
         else:
             cyprus.set_servo_position(2, 0.5)
             print("magnet has released")
+            self.ids.magnetControl.text = "Magnet On"
             OFF = True
 
     def auto(self):
         print("Run the arm automatically here")
+
+        self.isBallOnTallTower()
+        if tall_OFF == False:
+            print("ball in on top tower")
+            arm.go_to_position(-12)
+            cyprus.set_pwm_values(1, period_value=100000, compare_value=100000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+            print("lowered")
+            sleep(0.5)
+            cyprus.set_servo_position(2, 1)
+            print("grabbed")
+            sleep(0.5)
+            cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+            print("raised")
+            sleep(0.5)
+            arm.go_to_position(-20)
+            print("at final location")
+            cyprus.set_pwm_values(1, period_value=100000, compare_value=100000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+            print("lowered")
+            sleep(1)
+            cyprus.set_servo_position(2, 0.5)
+            print("released")
+            sleep(0.5)
+            cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+            print("raised")
+            sleep(0.5)
+            arm.go_to_position(0)
+
+
+
+        else:
+            self.isBallOnShortTower()
+            if short_OFF == False:
+                print("ball is at short tower")
+                arm.go_to_position(-20)
+                cyprus.set_pwm_values(1, period_value=100000, compare_value=100000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+                print("lowered")
+                sleep(0.5)
+                cyprus.set_servo_position(2, 1)
+                print("grabbed")
+                sleep(0.5)
+                cyprus.set_pwm_values(1, period_value=100000, compare_value=0,
+                                      compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+                print("raised")
+                sleep(0.5)
+                arm.go_to_position(-12)
+                print("at final location")
+                cyprus.set_pwm_values(1, period_value=100000, compare_value=100000,
+                                      compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+                print("lowered")
+                sleep(1)
+                cyprus.set_servo_position(2, 0.5)
+                print("released")
+                sleep(0.5)
+                cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+                print("raised")
+                sleep(0.5)
+                arm.go_to_position(0)
+
+
+
 
     def homeArm(self):
         global homeDirection
@@ -207,8 +271,9 @@ class MainScreen(Screen):
 
     def initialize(self):
         print("Home arm and turn off magnet")
-        self.homeArm()
         cyprus.set_servo_position(2, 0.5)
+        self.homeArm()
+
 
     def resetColors(self):
         self.ids.armControl.color = YELLOW
